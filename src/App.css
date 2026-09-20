@@ -1,0 +1,1291 @@
+/* =========================================================
+   APP SHELL
+   ========================================================= */
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.dashboard,
+.transactions-page,
+.settings-page,
+.accounts-page {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 36px 0 60px;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.dashboard-header,
+.page-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.dashboard-header h1,
+.page-title h1 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 46px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.dashboard-header p,
+.page-title p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  opacity: 0.6;
+}
+
+.header-badge {
+  padding: 8px 13px;
+  border: 1px solid #dce3ec;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.money-hero {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  padding: 32px;
+  border: 1px solid #dbe3ef;
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      135deg,
+      #101828 0%,
+      #18263d 55%,
+      #243a5b 100%
+    );
+  color: #fff;
+  box-shadow: 0 18px 45px rgba(16, 24, 40, 0.14);
+}
+
+.money-hero::after {
+  content: "";
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  right: -70px;
+  top: -100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.money-hero div {
+  position: relative;
+  z-index: 1;
+}
+
+.money-hero span,
+.money-hero small {
+  display: block;
+  opacity: 0.7;
+}
+
+.money-hero span {
+  font-size: 13px;
+}
+
+.money-hero strong {
+  display: block;
+  margin: 8px 0;
+  font-size: clamp(32px, 6vw, 52px);
+  letter-spacing: -0.04em;
+}
+
+.money-hero small {
+  font-size: 13px;
+}
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 42px;
+}
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 88px;
+  padding: 18px;
+  border: 1px solid #dce3ec;
+  border-radius: 18px;
+  background: #fff;
+  text-align: left;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.quick-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(16, 24, 40, 0.08);
+}
+
+.quick-action-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.expense-action {
+  border-color: #fecaca;
+}
+
+.expense-action .quick-action-icon {
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.income-action {
+  border-color: #bbf7d0;
+}
+
+.income-action .quick-action-icon {
+  background: #ecfdf3;
+  color: #059669;
+}
+
+.transfer-action {
+  border-color: #dbe3ef;
+}
+
+.transfer-action .quick-action-icon {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.quick-action span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.quick-action strong {
+  font-size: 14px;
+}
+
+.quick-action small {
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
+.dashboard-section {
+  margin-bottom: 42px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.section-heading p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   MONTHLY SUMMARY
+   ========================================================= */
+
+.monthly-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.summary-card {
+  min-height: 125px;
+  padding: 22px;
+  border: 1px solid #dce3ec;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.summary-card span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.summary-card strong {
+  font-size: 25px;
+  letter-spacing: -0.03em;
+}
+
+/* =========================================================
+   COLORS
+   ========================================================= */
+
+.income {
+  color: #059669 !important;
+}
+
+.expense {
+  color: #dc2626 !important;
+}
+
+.transfer-amount {
+  color: #64748b !important;
+}
+
+/* =========================================================
+   TRANSACTIONS
+   ========================================================= */
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transaction {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #dce3ec;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.transaction-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: #f1f5f9;
+  font-size: 19px;
+}
+
+.transaction-details {
+  min-width: 0;
+  flex: 1;
+}
+
+.transaction-details strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.transaction-details span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.transaction-date {
+  margin-top: 5px;
+  font-size: 11px;
+  opacity: 0.45;
+}
+
+.transaction-amount {
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.transaction-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.transaction-actions button {
+  padding: 7px 10px;
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 11px;
+}
+
+.transaction-actions .delete-button {
+  color: #dc2626;
+}
+
+.transfer-transaction {
+  background: #fafbfc;
+}
+
+/* =========================================================
+   GOAL
+   ========================================================= */
+
+.goal-card {
+  padding: 22px;
+  border: 1px solid #dce3ec;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.goal-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.goal-card-top span:first-child {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.goal-card-top strong {
+  font-size: 17px;
+}
+
+.goal-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #f8fafc;
+  font-size: 23px;
+}
+
+.goal-placeholder {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 180px;
+  padding: 30px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.65);
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 5px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  font-size: 20px;
+}
+
+.empty-state strong {
+  font-size: 14px;
+}
+
+.empty-state span {
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+/* =========================================================
+   TRANSACTIONS PAGE
+   ========================================================= */
+
+.transactions-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.transactions-summary > div {
+  padding: 18px;
+  border: 1px solid #dce3ec;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.transactions-summary span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.transactions-summary strong {
+  font-size: 20px;
+}
+
+.transactions-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.transaction-search {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #dce3ec;
+  border-radius: 12px;
+  outline: none;
+  background: #fff;
+}
+
+.transaction-search:focus,
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.12);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.filter-button {
+  padding: 9px 12px;
+  border: 1px solid #dce3ec;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.filter-button.active {
+  background: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+.transaction-count {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 12px;
+}
+
+/* =========================================================
+   ACCOUNTS
+   ========================================================= */
+
+.account-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.account-overview-card {
+  padding: 20px;
+  border: 1px solid #dce3ec;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.account-overview-card span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.account-overview-card strong {
+  display: block;
+  font-size: 24px;
+}
+
+.account-overview-card small {
+  display: block;
+  margin-top: 7px;
+  font-size: 11px;
+  opacity: 0.45;
+}
+
+.negative-text {
+  color: #dc2626;
+}
+
+.account-section-title {
+  margin: 30px 0 14px;
+}
+
+.account-section-title h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.account-section-title p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.account-card {
+  padding: 20px;
+  border: 1px solid #dce3ec;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.account-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.account-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: #f1f5f9;
+  font-size: 20px;
+}
+
+.loan-icon {
+  background: #fff7ed;
+}
+
+.chit-icon {
+  background: #fffbeb;
+}
+
+.account-name {
+  margin-top: 15px;
+}
+
+.account-name strong {
+  display: block;
+  font-size: 16px;
+}
+
+.account-name span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.account-balance {
+  margin: 20px 0;
+}
+
+.account-balance span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.account-balance strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 28px;
+}
+
+.account-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
+}
+
+.account-stat-row span {
+  display: block;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.account-stat-row strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.account-transaction-count {
+  margin-top: 15px;
+  font-size: 11px;
+  opacity: 0.45;
+}
+
+.account-delete {
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+}
+
+.loan-progress,
+.chit-progress {
+  margin-bottom: 18px;
+}
+
+.loan-progress-header,
+.chit-progress-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+}
+
+.chit-fill {
+  background: #d97706;
+}
+
+.loan-details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
+}
+
+.loan-details-grid span {
+  display: block;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.loan-details-grid strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.account-note {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #eff6ff;
+}
+
+.account-note strong {
+  font-size: 13px;
+}
+
+.account-note p {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 0.65;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.primary-button {
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 11px;
+  background: #111827;
+  color: #fff;
+  font-weight: 700;
+}
+
+.add-account-button {
+  white-space: nowrap;
+}
+
+.primary-button:hover {
+  background: #1f2937;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(5px);
+}
+
+.modal {
+  width: min(540px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.modal-header p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.modal-close {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 9px;
+  background: #f1f5f9;
+  font-size: 22px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid #dce3ec;
+  border-radius: 11px;
+  outline: none;
+  background: #fff;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-submit {
+  width: 100%;
+  margin-top: 7px;
+}
+
+.transfer-arrow {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -5px auto 10px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  font-weight: 700;
+}
+
+.loan-form-divider {
+  margin: 20px 0 14px;
+  padding-top: 15px;
+  border-top: 1px solid #eef2f7;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.settings-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 12px;
+  padding: 20px;
+  border: 1px solid #dce3ec;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.settings-card strong {
+  display: block;
+  font-size: 14px;
+}
+
+.settings-card p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.settings-status {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #059669;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.settings-status.muted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* =========================================================
+   BOTTOM NAV
+   ========================================================= */
+
+.bottom-nav {
+  position: fixed;
+  z-index: 50;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  width: min(470px, calc(100% - 28px));
+  padding: 5px;
+
+  border: 1px solid #dce3ec;
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 15px 40px rgba(15, 23, 42, 0.14);
+}
+
+.bottom-nav button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+
+  min-height: 58px;
+
+  border: 0;
+  border-radius: 13px;
+  background: transparent;
+
+  color: #64748b;
+  font-size: 10px;
+}
+
+.bottom-nav button.active {
+  background: #eef2f7;
+  color: #111827;
+  font-weight: 700;
+}
+
+.nav-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+.nav-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.app-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.loading-card {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loading-icon {
+  display: grid;
+  place-items: center;
+  width: 55px;
+  height: 55px;
+  border-radius: 16px;
+  background: #111827;
+  color: #fff;
+  font-size: 24px;
+}
+
+.loading-card strong {
+  font-size: 15px;
+}
+
+.loading-card span {
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .dashboard,
+  .transactions-page,
+  .settings-page,
+  .accounts-page {
+    width: min(100% - 24px, 700px);
+    padding-top: 24px;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .monthly-summary,
+  .transactions-summary,
+  .account-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .accounts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transactions-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filter-buttons {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .filter-button {
+    white-space: nowrap;
+  }
+
+  .dashboard-header,
+  .page-title {
+    flex-direction: column;
+  }
+
+  .loan-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .dashboard,
+  .transactions-page,
+  .settings-page,
+  .accounts-page {
+    width: calc(100% - 20px);
+    padding-top: 18px;
+  }
+
+  .money-hero {
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  .quick-action {
+    min-height: 76px;
+  }
+
+  .transaction {
+    padding: 13px;
+  }
+
+  .transaction-actions {
+    display: none;
+  }
+
+  .account-stat-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .bottom-nav {
+    bottom: 10px;
+  }
+}
+
+/* =========================================================
+   EXPANDABLE ACCOUNT TRANSACTION HISTORY
+   ========================================================= */
+
+.account-expand-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 15px;
+  padding: 11px 12px;
+  border: 1px solid #dce3ec;
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.account-expand-button:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.account-expand-chevron {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.account-history {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f7;
+}
+
+.account-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.account-history-header strong {
+  display: grid;
+  place-items: center;
+  min-width: 23px;
+  height: 23px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10px;
+}
+
+.account-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.account-history-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #eef2f7;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.account-history-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 31px;
+  width: 31px;
+  height: 31px;
+  border-radius: 9px;
+  background: #f1f5f9;
+  font-size: 13px;
+}
+
+.account-history-details {
+  min-width: 0;
+  flex: 1;
+}
+
+.account-history-details strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.account-history-details span {
+  display: block;
+  overflow: hidden;
+  margin-top: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+.account-history-details small {
+  display: block;
+  margin-top: 3px;
+  font-size: 9px;
+  opacity: 0.45;
+}
+
+.account-history-amount {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.account-history-neutral {
+  color: #64748b;
+}
+
+.account-history-empty {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .account-history-item {
+    padding: 9px;
+  }
+
+  .account-history-amount {
+    font-size: 10px;
+  }
+}
