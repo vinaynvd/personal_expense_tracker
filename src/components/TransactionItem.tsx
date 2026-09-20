@@ -23,10 +23,6 @@ function TransactionItem({
     transaction.type ===
     "transfer";
 
-  const isExpense =
-    transaction.type ===
-    "expense";
-
   let icon = "💸";
 
   if (isIncome) {
