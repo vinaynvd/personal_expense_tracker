@@ -6,6 +6,7 @@ import {
   type AccountRecord,
   type AccountType,
   type LoanCategory,
+  type SavingsCategory,
   type TransactionRecord,
 } from "../db";
 
@@ -196,6 +197,25 @@ function Accounts({
   const [chitMaturityDate, setChitMaturityDate] =
     useState("");
 
+  // --------------------------------------------------
+  // Savings fields
+  // --------------------------------------------------
+
+  const [savingsCategory, setSavingsCategory] =
+    useState<SavingsCategory>("general");
+
+  const [savingsTarget, setSavingsTarget] =
+    useState("");
+
+  const [savingsMonthlyContribution, setSavingsMonthlyContribution] =
+    useState("");
+
+  const [savingsStartDate, setSavingsStartDate] =
+    useState("");
+
+  const [savingsTargetDate, setSavingsTargetDate] =
+    useState("");
+
   // ==================================================
   // ACCOUNT INTELLIGENCE ENGINE
   // ==================================================
@@ -368,6 +388,15 @@ function Accounts({
           transfersOut;
       }
 
+      // Savings: money earmarked into a savings account/goal.
+      // Transfers in increase the saved amount; transfers out reduce it.
+      if (account.type === "savings") {
+        balance =
+          account.openingBalance +
+          transfersIn -
+          transfersOut;
+      }
+
       // ----------------------------------------------
       // Chit contribution count
       // ----------------------------------------------
@@ -410,6 +439,7 @@ function Accounts({
       ({ account }) =>
         account.type === "bank" ||
         account.type === "cash" ||
+        account.type === "savings" ||
         account.type === "chit"
     )
     .reduce(
@@ -570,6 +600,14 @@ function Accounts({
         chitMaturityDate || undefined;
     }
 
+    if (type === "savings") {
+      newAccount.savingsCategory = savingsCategory;
+      newAccount.savingsTarget = Number(savingsTarget) || undefined;
+      newAccount.savingsMonthlyContribution = Number(savingsMonthlyContribution) || undefined;
+      newAccount.savingsStartDate = savingsStartDate || undefined;
+      newAccount.savingsTargetDate = savingsTargetDate || undefined;
+    }
+
     await db.accounts.add(newAccount);
 
     await onAccountsChanged();
@@ -602,6 +640,12 @@ function Accounts({
     setExpectedPayout("");
     setChitStartDate("");
     setChitMaturityDate("");
+
+    setSavingsCategory("general");
+    setSavingsTarget("");
+    setSavingsMonthlyContribution("");
+    setSavingsStartDate("");
+    setSavingsTargetDate("");
   }
 
   // ==================================================
@@ -665,6 +709,12 @@ function Accounts({
     );
     setChitStartDate(account.chitStartDate || "");
     setChitMaturityDate(account.chitMaturityDate || "");
+
+    setSavingsCategory(account.savingsCategory || "general");
+    setSavingsTarget(account.savingsTarget !== undefined ? String(account.savingsTarget) : "");
+    setSavingsMonthlyContribution(account.savingsMonthlyContribution !== undefined ? String(account.savingsMonthlyContribution) : "");
+    setSavingsStartDate(account.savingsStartDate || "");
+    setSavingsTargetDate(account.savingsTargetDate || "");
   }
 
   function closeAccountForm() {
@@ -743,6 +793,20 @@ function Accounts({
       delete updatedAccount.expectedPayout;
       delete updatedAccount.chitStartDate;
       delete updatedAccount.chitMaturityDate;
+    }
+
+    if (type === "savings") {
+      updatedAccount.savingsCategory = savingsCategory;
+      updatedAccount.savingsTarget = Number(savingsTarget) || undefined;
+      updatedAccount.savingsMonthlyContribution = Number(savingsMonthlyContribution) || undefined;
+      updatedAccount.savingsStartDate = savingsStartDate || undefined;
+      updatedAccount.savingsTargetDate = savingsTargetDate || undefined;
+    } else {
+      delete updatedAccount.savingsCategory;
+      delete updatedAccount.savingsTarget;
+      delete updatedAccount.savingsMonthlyContribution;
+      delete updatedAccount.savingsStartDate;
+      delete updatedAccount.savingsTargetDate;
     }
 
     // Transactions currently reference accounts by name. If the account is
@@ -1116,6 +1180,37 @@ function Accounts({
       </section>
 
       {/* ==============================================
+          SAVINGS
+          ============================================== */}
+
+      <AccountSectionTitle
+        title="Savings"
+        description="Track money set aside for goals and long-term saving."
+      />
+
+      <section className="accounts-grid">
+        {accountStats
+          .filter(({ account }) => account.type === "savings")
+          .map(({ account, income, expenses, transfersIn, transfersOut, transactionCount, balance }) => (
+            <AccountCard
+              key={account.id}
+              account={account}
+              income={income}
+              expenses={expenses}
+              transfersIn={transfersIn}
+              transfersOut={transfersOut}
+              transactionCount={transactionCount}
+              balance={balance}
+              transactions={transactions}
+              expanded={expandedAccounts.has(account.id)}
+              onToggle={() => toggleAccount(account.id)}
+              onDelete={handleDeleteAccount}
+              onEdit={handleEditAccount}
+            />
+          ))}
+      </section>
+
+      {/* ==============================================
           CHITS
           ============================================== */}
 
@@ -1235,7 +1330,7 @@ function Accounts({
 
                 <p>
                   Add a bank, cash account,
-                  credit card, loan or chit.
+                  credit card, loan, chit or savings account.
                 </p>
               </div>
 
@@ -1263,6 +1358,8 @@ function Accounts({
                     ? "Example: Bajaj Home Loan"
                     : type === "chit"
                     ? "Example: 5L Chit - 1"
+                    : type === "savings"
+                    ? "Example: House Fund"
                     : "Example: SBI Bank"
                 }
                 value={name}
@@ -1309,13 +1406,18 @@ function Accounts({
                 <option value="chit">
                   🪙 Chit
                 </option>
+
+                <option value="savings">
+                  💰 Savings
+                </option>
               </select>
             </div>
 
             {/* NORMAL ACCOUNTS */}
 
             {type !== "loan" &&
-              type !== "chit" && (
+              type !== "chit" &&
+              type !== "savings" && (
                 <div className="form-group">
                   <label>
                     {type ===
@@ -1662,6 +1764,86 @@ function Accounts({
                           event.target.value
                         )
                       }
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {type === "savings" && (
+              <>
+                <div className="loan-form-divider">
+                  Savings details
+                </div>
+
+                <div className="form-group">
+                  <label>Savings type</label>
+                  <select
+                    value={savingsCategory}
+                    onChange={(event) =>
+                      setSavingsCategory(event.target.value as SavingsCategory)
+                    }
+                  >
+                    <option value="general">General Savings</option>
+                    <option value="fd">Fixed Deposit (FD)</option>
+                    <option value="rd">Recurring Deposit (RD)</option>
+                    <option value="ppf">PPF</option>
+                    <option value="goal">Goal / House Fund</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Current saved amount</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={openingBalance}
+                    onChange={(event) => setOpeningBalance(event.target.value)}
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Target amount</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="2500000"
+                      value={savingsTarget}
+                      onChange={(event) => setSavingsTarget(event.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Monthly contribution</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="50000"
+                      value={savingsMonthlyContribution}
+                      onChange={(event) => setSavingsMonthlyContribution(event.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Start date</label>
+                    <input
+                      type="date"
+                      value={savingsStartDate}
+                      onChange={(event) => setSavingsStartDate(event.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Target date</label>
+                    <input
+                      type="date"
+                      value={savingsTargetDate}
+                      onChange={(event) => setSavingsTargetDate(event.target.value)}
                     />
                   </div>
                 </div>
@@ -2243,6 +2425,20 @@ const COMPACT_VIEW_CSS = `
     align-self: start;
   }
 
+  .compact-savings-row .compact-row-main {
+    cursor: default;
+  }
+
+  .compact-savings-no-target {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .compact-savings-closed-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   @media (max-width: 900px) {
     .compact-expanded-details {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2396,6 +2592,9 @@ function CompactAccountsView({
   const chits = accountStats.filter(
     ({ account }) => account.type === "chit"
   );
+  const savings = accountStats.filter(
+    ({ account }) => account.type === "savings"
+  );
 
   const moneySearch = getSectionSearch("money");
   const moneyFilter = getSectionFilter("money");
@@ -2441,6 +2640,17 @@ function CompactAccountsView({
   const filteredOtherLoans = filteredLoans.filter(
     ({ account }) => getLoanCompactCategory(account) === "other"
   );
+
+  const savingsSearch = getSectionSearch("savings");
+  const savingsFilter = getSectionFilter("savings");
+  const filteredSavings = savings.filter(({ account, balance }) => {
+    const matchesSearch = !savingsSearch || account.name.toLowerCase().includes(savingsSearch);
+    const matchesFilter =
+      savingsFilter === "all" ||
+      (savingsFilter === "active" && (account.savingsTarget || 0) > balance) ||
+      (savingsFilter === "completed" && (account.savingsTarget || 0) > 0 && balance >= (account.savingsTarget || 0));
+    return matchesSearch && matchesFilter;
+  });
 
   const chitSearch = getSectionSearch("chits");
   const chitFilter = getSectionFilter("chits");
@@ -2530,6 +2740,29 @@ function CompactAccountsView({
 
   const monthlyChitPaid = monthlyChitPaymentTransactions.reduce(
     (total, transaction) => total + transaction.amount,
+    0
+  );
+
+  const monthlySavingsPaymentTransactions = transactions.filter(
+    (transaction) =>
+      transaction.type === "transfer" &&
+      transaction.toAccount &&
+      transaction.date.slice(0, 7) === currentMonthKey &&
+      savings.some(({ account }) => account.name === transaction.toAccount)
+  );
+
+  const monthlySavingsPaid = monthlySavingsPaymentTransactions.reduce(
+    (total, transaction) => total + transaction.amount,
+    0
+  );
+
+  const totalSavingsMonthlyContribution = savings.reduce(
+    (total, { account }) => total + (account.savingsMonthlyContribution || 0),
+    0
+  );
+
+  const totalSavingsBalance = savings.reduce(
+    (total, { balance }) => total + Math.max(0, balance),
     0
   );
 
@@ -2795,6 +3028,43 @@ function CompactAccountsView({
           </>
         )}
       </CompactSection>
+
+      {savings.length > 0 && (
+        <CompactSection
+          title="Savings"
+          count={filteredSavings.length}
+          summary={`Saved ${formatCompactMoney(totalSavingsBalance)} / Monthly ${formatCompactMoney(totalSavingsMonthlyContribution)}`}
+          expanded={expandedSections.has("savings")}
+          onToggle={() => toggleSection("savings")}
+          controls={
+            <CompactSectionControls
+              search={sectionSearch.savings || ""}
+              onSearchChange={(value) => updateSectionSearch("savings", value)}
+              filter={savingsFilter}
+              onFilterChange={(value) => updateSectionFilter("savings", value)}
+              filterOptions={[
+                ["all", "All savings"],
+                ["active", "Active"],
+                ["completed", "Target reached"],
+              ]}
+              searchPlaceholder="Search savings..."
+            />
+          }
+        >
+          {filteredSavings.length === 0 ? (
+            <div className="compact-empty">No savings accounts match your search/filter.</div>
+          ) : (
+            filteredSavings.map((stats) => (
+              <CompactSavingsRow
+                key={stats.account.id}
+                stats={stats}
+                onDelete={onDelete}
+                onEdit={onEdit}
+              />
+            ))
+          )}
+        </CompactSection>
+      )}
 
       <CompactSection
         title="Chits"
@@ -3120,6 +3390,100 @@ function CompactLoanRow({
             onDelete(account);
           }}
           aria-label={`Delete ${account.name}`}
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CompactSavingsRow({
+  stats,
+  onDelete,
+  onEdit,
+}: {
+  stats: {
+    account: AccountRecord;
+    balance: number;
+    transfersIn: number;
+    transfersOut: number;
+    transactionCount: number;
+  };
+  onDelete: (account: AccountRecord) => void;
+  onEdit: (account: AccountRecord) => void;
+}) {
+  const target = stats.account.savingsTarget || 0;
+  const progress = target > 0
+    ? Math.min(100, Math.max(0, (stats.balance / target) * 100))
+    : 0;
+  const categoryLabel = {
+    general: "General Savings",
+    fd: "Fixed Deposit",
+    rd: "Recurring Deposit",
+    ppf: "PPF",
+    goal: "Goal",
+    other: "Other",
+  }[stats.account.savingsCategory || "general"];
+
+  return (
+    <div className="compact-expandable-row compact-savings-row">
+      <div className="compact-row-main">
+        <div className="compact-row-title-wrap">
+          <strong>{stats.account.name}</strong>
+          <span>{categoryLabel}</span>
+        </div>
+
+        {target > 0 ? (
+          <div className="compact-progress-track">
+            <div
+              className={`compact-progress-fill ${getCompactProgressClass(progress)}`}
+              style={{ width: `${progress}%` }}
+            />
+            <span className={`compact-progress-label ${progress >= 20 ? "on-fill" : ""}`}>
+              {Math.round(progress)}%
+            </span>
+          </div>
+        ) : (
+          <div className="compact-savings-no-target">No target set</div>
+        )}
+
+        <div className="compact-loan-closed-stats compact-savings-closed-stats">
+          <div>
+            <span>Saved</span>
+            <strong>{formatCompactMoney(stats.balance)}</strong>
+          </div>
+          <div>
+            <span>Monthly</span>
+            <strong>{formatCompactMoney(stats.account.savingsMonthlyContribution || 0)}</strong>
+          </div>
+          <div>
+            <span>Target</span>
+            <strong>{target > 0 ? formatCompactMoney(target) : "—"}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="compact-row-actions">
+        <button
+          type="button"
+          className="compact-edit"
+          onClick={(event) => {
+            event.stopPropagation();
+            onEdit(stats.account);
+          }}
+          aria-label={`Edit ${stats.account.name}`}
+        >
+          ✏️
+        </button>
+        <button
+          type="button"
+          className="compact-delete"
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete(stats.account);
+          }}
+          aria-label={`Delete ${stats.account.name}`}
         >
           🗑️
         </button>
@@ -4147,6 +4511,10 @@ function getAccountIcon(
     return "🏦";
   }
 
+  if (type === "savings") {
+    return "💰";
+  }
+
   return "🪙";
 }
 
@@ -4167,6 +4535,10 @@ function getAccountTypeLabel(
 
   if (type === "loan") {
     return "Loan";
+  }
+
+  if (type === "savings") {
+    return "Savings";
   }
 
   return "Chit";
