@@ -2743,19 +2743,6 @@ function CompactAccountsView({
     0
   );
 
-  const monthlySavingsPaymentTransactions = transactions.filter(
-    (transaction) =>
-      transaction.type === "transfer" &&
-      transaction.toAccount &&
-      transaction.date.slice(0, 7) === currentMonthKey &&
-      savings.some(({ account }) => account.name === transaction.toAccount)
-  );
-
-  const monthlySavingsPaid = monthlySavingsPaymentTransactions.reduce(
-    (total, transaction) => total + transaction.amount,
-    0
-  );
-
   const totalSavingsMonthlyContribution = savings.reduce(
     (total, { account }) => total + (account.savingsMonthlyContribution || 0),
     0
