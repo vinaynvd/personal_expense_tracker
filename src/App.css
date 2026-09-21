@@ -1121,8 +1121,15 @@ button {
   }
 
   .transaction-actions {
-    display: none;
-  }
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.transaction-actions button {
+  padding: 6px 8px;
+  font-size: 10px;
+}
 
   .account-stat-row {
     grid-template-columns: repeat(3, 1fr);
