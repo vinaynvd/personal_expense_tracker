@@ -170,7 +170,7 @@ function App() {
 
   // Transfer Money:
   // From = bank accounts and physical credit cards.
-  // To = loans and chit funds.
+  // To = loans, chit funds and savings.
   const transferSourceAccounts =
     useMemo(
       () =>
@@ -340,6 +340,31 @@ function App() {
           total + Math.max(item.balance, 0),
         0
       );
+
+  // Chit contributions are treated as part of the
+  // "Savings Journey", but NOT as liquid/available assets.
+  const totalChitContributions =
+    useMemo(
+      () =>
+        transactions
+          .filter(
+            (transaction) =>
+              transaction.type === "transfer" &&
+              transaction.toAccount &&
+              accounts.some(
+                (account) =>
+                  account.type === "chit" &&
+                  account.name ===
+                    transaction.toAccount
+              )
+          )
+          .reduce(
+            (total, transaction) =>
+              total + transaction.amount,
+            0
+          ),
+      [transactions, accounts]
+    );
 
   // ======================================================
   // EXPENSE
@@ -677,6 +702,9 @@ function App() {
           totalSavings={
             totalSavings
           }
+          totalChitContributions={
+            totalChitContributions
+          }
           recentTransactions={
             recentTransactions
           }
@@ -788,6 +816,7 @@ function HomePage({
   monthlyExpenses,
   totalLiquidAssets,
   totalSavings,
+  totalChitContributions,
   recentTransactions,
   onAddExpense,
   onAddIncome,
@@ -798,12 +827,17 @@ function HomePage({
   monthlyExpenses: number;
   totalLiquidAssets: number;
   totalSavings: number;
+  totalChitContributions: number;
   recentTransactions: TransactionRecord[];
   onAddExpense: () => void;
   onAddIncome: () => void;
   onTransfer: () => void;
   onNavigate: (page: Page) => void;
 }) {
+  const totalSavingsJourney =
+    totalSavings +
+    totalChitContributions;
+
   return (
     <main className="dashboard">
       <header className="dashboard-header">
@@ -870,7 +904,8 @@ function HomePage({
             display: "grid",
             placeItems: "center",
             fontSize: "30px",
-            background: "rgba(255, 193, 7, 0.16)",
+            background:
+              "rgba(255, 193, 7, 0.16)",
           }}
           aria-hidden="true"
         >
@@ -900,8 +935,36 @@ function HomePage({
               marginBottom: "6px",
             }}
           >
-            ₹{formatCurrency(totalSavings)}
+            ₹
+            {formatCurrency(
+              totalSavingsJourney
+            )}
           </strong>
+
+          <div
+            style={{
+              display: "grid",
+              gap: "3px",
+              marginBottom: "8px",
+              fontSize: "13px",
+              lineHeight: 1.35,
+              opacity: 0.68,
+            }}
+          >
+            <span>
+              Savings accounts: ₹
+              {formatCurrency(
+                totalSavings
+              )}
+            </span>
+
+            <span>
+              Chit contributions: ₹
+              {formatCurrency(
+                totalChitContributions
+              )}
+            </span>
+          </div>
 
           <p
             style={{
@@ -911,7 +974,9 @@ function HomePage({
               opacity: 0.72,
             }}
           >
-            Every rupee you save is a little more freedom for your future self.
+            Every rupee you deliberately set
+            aside is a little more freedom for
+            your future self.
           </p>
         </div>
 
@@ -1788,7 +1853,8 @@ function MonthlyPage({
   accounts: AccountRecord[];
 }) {
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedMonth, setSelectedMonth] =
+    useState(currentMonth);
 
   const monthRows = useMemo(() => {
     const result: Array<{
@@ -1798,74 +1864,155 @@ function MonthlyPage({
       savings: number;
     }> = [];
 
-    const cursor = new Date(`${selectedMonth}-01T12:00:00`);
-    cursor.setMonth(cursor.getMonth() - 5);
+    const cursor =
+      new Date(`${selectedMonth}-01T12:00:00`);
+
+    cursor.setMonth(
+      cursor.getMonth() - 5
+    );
 
     const loanNames = new Set(
       accounts
-        .filter((account) => account.type === "loan")
-        .map((account) => account.name)
+        .filter(
+          (account) =>
+            account.type === "loan"
+        )
+        .map(
+          (account) =>
+            account.name
+        )
     );
 
     const savingsNames = new Set(
       accounts
-        .filter((account) => account.type === "savings")
-        .map((account) => account.name)
+        .filter(
+          (account) =>
+            account.type === "savings"
+        )
+        .map(
+          (account) =>
+            account.name
+        )
     );
 
     for (let i = 0; i < 6; i += 1) {
-      const year = cursor.getFullYear();
-      const month = String(cursor.getMonth() + 1).padStart(2, "0");
-      const key = `${year}-${month}`;
+      const year =
+        cursor.getFullYear();
 
-      const monthTransactions = transactions.filter(
-        (transaction) =>
-          transaction.type === "transfer" &&
-          transaction.date.startsWith(key)
-      );
+      const month =
+        String(
+          cursor.getMonth() + 1
+        ).padStart(2, "0");
 
-      const obligations = monthTransactions
-        .filter((transaction) =>
-          loanNames.has(transaction.toAccount || "")
-        )
-        .reduce((total, transaction) => total + transaction.amount, 0);
+      const key =
+        `${year}-${month}`;
 
-      const savings = monthTransactions
-        .filter((transaction) =>
-          savingsNames.has(transaction.toAccount || "")
-        )
-        .reduce((total, transaction) => total + transaction.amount, 0);
+      const monthTransactions =
+        transactions.filter(
+          (transaction) =>
+            transaction.type ===
+              "transfer" &&
+            transaction.date.startsWith(
+              key
+            )
+        );
+
+      const obligations =
+        monthTransactions
+          .filter(
+            (transaction) =>
+              loanNames.has(
+                transaction.toAccount ||
+                  ""
+              )
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              transaction.amount,
+            0
+          );
+
+      const savings =
+        monthTransactions
+          .filter(
+            (transaction) =>
+              savingsNames.has(
+                transaction.toAccount ||
+                  ""
+              )
+          )
+          .reduce(
+            (total, transaction) =>
+              total +
+              transaction.amount,
+            0
+          );
 
       result.push({
         key,
-        label: cursor.toLocaleDateString("en-IN", {
-          month: "short",
-        }),
+        label:
+          cursor.toLocaleDateString(
+            "en-IN",
+            {
+              month: "short",
+            }
+          ),
         obligations,
         savings,
       });
 
-      cursor.setMonth(cursor.getMonth() + 1);
+      cursor.setMonth(
+        cursor.getMonth() + 1
+      );
     }
 
     return result;
-  }, [accounts, selectedMonth, transactions]);
+  }, [
+    accounts,
+    selectedMonth,
+    transactions,
+  ]);
 
   const selected =
-    monthRows.find((row) => row.key === selectedMonth) ||
-    monthRows[monthRows.length - 1];
+    monthRows.find(
+      (row) =>
+        row.key === selectedMonth
+    ) ||
+    monthRows[
+      monthRows.length - 1
+    ];
 
-  const selectedDate = new Date(`${selectedMonth}-01T12:00:00`);
-  const monthLabel = selectedDate.toLocaleDateString("en-IN", {
-    month: "long",
-    year: "numeric",
-  });
+  const selectedDate =
+    new Date(
+      `${selectedMonth}-01T12:00:00`
+    );
 
-  function changeMonth(offset: number) {
-    const date = new Date(`${selectedMonth}-01T12:00:00`);
-    date.setMonth(date.getMonth() + offset);
+  const monthLabel =
+    selectedDate.toLocaleDateString(
+      "en-IN",
+      {
+        month: "long",
+        year: "numeric",
+      }
+    );
+
+  function changeMonth(
+    offset: number
+  ) {
+    const date =
+      new Date(
+        `${selectedMonth}-01T12:00:00`
+      );
+
+    date.setMonth(
+      date.getMonth() + offset
+    );
+
     setSelectedMonth(
-      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+      `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`
     );
   }
 
@@ -1873,12 +2020,23 @@ function MonthlyPage({
     <main className="dashboard">
       <header className="dashboard-header">
         <div>
-          <span className="eyebrow">FINANCIAL PROGRESS</span>
-          <h1>Monthly View</h1>
-          <p>See where your money went — and what you built.</p>
+          <span className="eyebrow">
+            FINANCIAL PROGRESS
+          </span>
+
+          <h1>
+            Monthly View
+          </h1>
+
+          <p>
+            See where your money went —
+            and what you built.
+          </p>
         </div>
 
-        <div className="header-badge">Overview</div>
+        <div className="header-badge">
+          Overview
+        </div>
       </header>
 
       <section
@@ -1886,16 +2044,20 @@ function MonthlyPage({
           marginBottom: "20px",
           padding: "18px 18px 12px",
           borderRadius: "22px",
-          background: "var(--card, #ffffff)",
-          border: "1px solid rgba(0,0,0,0.07)",
-          boxShadow: "0 10px 28px rgba(0,0,0,0.05)",
+          background:
+            "var(--card, #ffffff)",
+          border:
+            "1px solid rgba(0,0,0,0.07)",
+          boxShadow:
+            "0 10px 28px rgba(0,0,0,0.05)",
         }}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent:
+              "space-between",
             gap: "12px",
             marginBottom: "8px",
           }}
@@ -1906,31 +2068,48 @@ function MonthlyPage({
                 display: "block",
                 fontSize: "12px",
                 fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                letterSpacing:
+                  "0.08em",
+                textTransform:
+                  "uppercase",
                 opacity: 0.55,
               }}
             >
               6-month progress
             </span>
-            <strong style={{ fontSize: "18px" }}>
+
+            <strong
+              style={{
+                fontSize: "18px",
+              }}
+            >
               Savings vs obligations
             </strong>
           </div>
 
-          <div style={{ display: "flex", gap: "6px" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+            }}
+          >
             <button
               type="button"
               className="text-button"
-              onClick={() => changeMonth(-1)}
+              onClick={() =>
+                changeMonth(-1)
+              }
               aria-label="Previous month"
             >
               ←
             </button>
+
             <button
               type="button"
               className="text-button"
-              onClick={() => changeMonth(1)}
+              onClick={() =>
+                changeMonth(1)
+              }
               aria-label="Next month"
             >
               →
@@ -1938,28 +2117,45 @@ function MonthlyPage({
           </div>
         </div>
 
-        <MonthlyLineChart rows={monthRows} />
+        <MonthlyLineChart
+          rows={monthRows}
+        />
       </section>
 
       <section
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent:
+            "space-between",
           gap: "12px",
           marginBottom: "14px",
         }}
       >
         <div>
-          <span className="eyebrow">SELECTED MONTH</span>
-          <h2 style={{ margin: "4px 0 0" }}>{monthLabel}</h2>
+          <span className="eyebrow">
+            SELECTED MONTH
+          </span>
+
+          <h2
+            style={{
+              margin: "4px 0 0",
+            }}
+          >
+            {monthLabel}
+          </h2>
         </div>
 
-        {selectedMonth !== currentMonth && (
+        {selectedMonth !==
+          currentMonth && (
           <button
             className="text-button"
             type="button"
-            onClick={() => setSelectedMonth(currentMonth)}
+            onClick={() =>
+              setSelectedMonth(
+                currentMonth
+              )
+            }
           >
             This month
           </button>
@@ -1968,19 +2164,43 @@ function MonthlyPage({
 
       <section className="monthly-summary">
         <div className="summary-card">
-          <span>Total obligations</span>
+          <span>
+            Total obligations
+          </span>
+
           <strong className="expense">
-            ₹{formatCurrency(selected?.obligations || 0)}
+            ₹
+            {formatCurrency(
+              selected?.obligations ||
+                0
+            )}
           </strong>
-          <small><b> Loan payments made</b></small>
+
+          <small>
+            <b>
+              Loan payments made
+            </b>
+          </small>
         </div>
 
         <div className="summary-card">
-          <span>Total savings</span>
+          <span>
+            Total savings
+          </span>
+
           <strong className="income">
-            ₹{formatCurrency(selected?.savings || 0)}
+            ₹
+            {formatCurrency(
+              selected?.savings ||
+                0
+            )}
           </strong>
-          <small><b> Moved into savings</b></small>
+
+          <small>
+            <b>
+              Moved into savings
+            </b>
+          </small>
         </div>
       </section>
 
@@ -1992,8 +2212,10 @@ function MonthlyPage({
           borderRadius: "22px",
           background:
             "linear-gradient(135deg, #fff8e7 0%, #fffdf7 55%, #f3f8ff 100%)",
-          border: "1px solid rgba(184, 134, 11, 0.18)",
-          boxShadow: "0 10px 30px rgba(40, 30, 10, 0.06)",
+          border:
+            "1px solid rgba(184, 134, 11, 0.18)",
+          boxShadow:
+            "0 10px 30px rgba(40, 30, 10, 0.06)",
           display: "flex",
           alignItems: "center",
           gap: "15px",
@@ -2008,17 +2230,35 @@ function MonthlyPage({
             display: "grid",
             placeItems: "center",
             fontSize: "26px",
-            background: "rgba(255, 193, 7, 0.16)",
+            background:
+              "rgba(255, 193, 7, 0.16)",
           }}
         >
           🌱
         </div>
+
         <div>
-          <strong style={{ display: "block", marginBottom: "4px" }}>
+          <strong
+            style={{
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
             Small steps. Bigger future.
           </strong>
-          <span style={{ fontSize: "14px", opacity: 0.7 }}>
-            You saved ₹{formatCurrency(selected?.savings || 0)} in {monthLabel}.
+
+          <span
+            style={{
+              fontSize: "14px",
+              opacity: 0.7,
+            }}
+          >
+            You saved ₹
+            {formatCurrency(
+              selected?.savings ||
+                0
+            )}{" "}
+            in {monthLabel}.
             Keep building. 🚀
           </span>
         </div>
@@ -2043,31 +2283,62 @@ function MonthlyLineChart({
   const right = 20;
   const top = 18;
   const bottom = 42;
-  const chartWidth = width - left - right;
-  const chartHeight = height - top - bottom;
-  const maxValue = Math.max(
-    1,
-    ...rows.flatMap((row) => [row.obligations, row.savings])
-  );
 
-  const pointsFor = (key: "obligations" | "savings") =>
+  const chartWidth =
+    width - left - right;
+
+  const chartHeight =
+    height - top - bottom;
+
+  const maxValue =
+    Math.max(
+      1,
+      ...rows.flatMap(
+        (row) => [
+          row.obligations,
+          row.savings,
+        ]
+      )
+    );
+
+  const pointsFor = (
+    key:
+      | "obligations"
+      | "savings"
+  ) =>
     rows
-      .map((row, index) => {
-        const x =
-          left +
-          (rows.length === 1
-            ? chartWidth / 2
-            : (index / (rows.length - 1)) * chartWidth);
-        const y =
-          top +
-          chartHeight -
-          (row[key] / maxValue) * chartHeight;
-        return `${x},${y}`;
-      })
+      .map(
+        (
+          row,
+          index
+        ) => {
+          const x =
+            left +
+            (rows.length === 1
+              ? chartWidth / 2
+              : (index /
+                  (rows.length - 1)) *
+                chartWidth);
+
+          const y =
+            top +
+            chartHeight -
+            (row[key] /
+              maxValue) *
+              chartHeight;
+
+          return `${x},${y}`;
+        }
+      )
       .join(" ");
 
   return (
-    <div style={{ width: "100%", overflowX: "auto" }}>
+    <div
+      style={{
+        width: "100%",
+        overflowX: "auto",
+      }}
+    >
       <svg
         viewBox={`0 0 ${width} ${height}`}
         style={{
@@ -2079,23 +2350,34 @@ function MonthlyLineChart({
         role="img"
         aria-label="Monthly savings and obligations line graph"
       >
-        {[0, 0.5, 1].map((fraction) => {
-          const y = top + chartHeight - fraction * chartHeight;
-          return (
-            <line
-              key={fraction}
-              x1={left}
-              x2={width - right}
-              y1={y}
-              y2={y}
-              stroke="currentColor"
-              strokeOpacity="0.08"
-            />
-          );
-        })}
+        {[0, 0.5, 1].map(
+          (fraction) => {
+            const y =
+              top +
+              chartHeight -
+              fraction *
+                chartHeight;
+
+            return (
+              <line
+                key={fraction}
+                x1={left}
+                x2={
+                  width - right
+                }
+                y1={y}
+                y2={y}
+                stroke="currentColor"
+                strokeOpacity="0.08"
+              />
+            );
+          }
+        )}
 
         <polyline
-          points={pointsFor("obligations")}
+          points={pointsFor(
+            "obligations"
+          )}
           fill="none"
           stroke="#e76f51"
           strokeWidth="4"
@@ -2104,7 +2386,9 @@ function MonthlyLineChart({
         />
 
         <polyline
-          points={pointsFor("savings")}
+          points={pointsFor(
+            "savings"
+          )}
           fill="none"
           stroke="#2a9d8f"
           strokeWidth="4"
@@ -2112,53 +2396,98 @@ function MonthlyLineChart({
           strokeLinejoin="round"
         />
 
-        {rows.map((row, index) => {
-          const x =
-            left +
-            (rows.length === 1
-              ? chartWidth / 2
-              : (index / (rows.length - 1)) * chartWidth);
-          const obligationY =
-            top +
-            chartHeight -
-            (row.obligations / maxValue) * chartHeight;
-          const savingsY =
-            top +
-            chartHeight -
-            (row.savings / maxValue) * chartHeight;
+        {rows.map(
+          (
+            row,
+            index
+          ) => {
+            const x =
+              left +
+              (rows.length ===
+              1
+                ? chartWidth / 2
+                : (index /
+                    (rows.length -
+                      1)) *
+                  chartWidth);
 
-          return (
-            <g key={row.key}>
-              <circle
-                cx={x}
-                cy={obligationY}
-                r="5"
-                fill="#e76f51"
-              />
-              <circle
-                cx={x}
-                cy={savingsY}
-                r="5"
-                fill="#2a9d8f"
-              />
-              <text
-                x={x}
-                y={height - 16}
-                textAnchor="middle"
-                fontSize="12"
-                fill="currentColor"
-                opacity="0.6"
+            const obligationY =
+              top +
+              chartHeight -
+              (row.obligations /
+                maxValue) *
+                chartHeight;
+
+            const savingsY =
+              top +
+              chartHeight -
+              (row.savings /
+                maxValue) *
+                chartHeight;
+
+            return (
+              <g
+                key={row.key}
               >
-                {row.label}
-              </text>
-            </g>
-          );
-        })}
+                <circle
+                  cx={x}
+                  cy={
+                    obligationY
+                  }
+                  r="5"
+                  fill="#e76f51"
+                />
 
-        <text x="8" y={top + 5} fontSize="11" fill="currentColor" opacity="0.45">
-          ₹{formatCompactCurrency(maxValue)}
+                <circle
+                  cx={x}
+                  cy={
+                    savingsY
+                  }
+                  r="5"
+                  fill="#2a9d8f"
+                />
+
+                <text
+                  x={x}
+                  y={
+                    height - 16
+                  }
+                  textAnchor="middle"
+                  fontSize="12"
+                  fill="currentColor"
+                  opacity="0.6"
+                >
+                  {row.label}
+                </text>
+              </g>
+            );
+          }
+        )}
+
+        <text
+          x="8"
+          y={top + 5}
+          fontSize="11"
+          fill="currentColor"
+          opacity="0.45"
+        >
+          ₹
+          {formatCompactCurrency(
+            maxValue
+          )}
         </text>
-        <text x="8" y={top + chartHeight + 4} fontSize="11" fill="currentColor" opacity="0.45">
+
+        <text
+          x="8"
+          y={
+            top +
+            chartHeight +
+            4
+          }
+          fontSize="11"
+          fill="currentColor"
+          opacity="0.45"
+        >
           ₹0
         </text>
       </svg>
@@ -2166,7 +2495,8 @@ function MonthlyLineChart({
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent:
+            "center",
           gap: "20px",
           fontSize: "12px",
           fontWeight: 600,
@@ -2174,8 +2504,13 @@ function MonthlyLineChart({
           marginTop: "-4px",
         }}
       >
-        <span>🔴 Obligations</span>
-        <span>🟢 Savings</span>
+        <span>
+          🔴 Obligations
+        </span>
+
+        <span>
+          🟢 Savings
+        </span>
       </div>
     </div>
   );
@@ -2190,7 +2525,9 @@ function BottomNav({
   onNavigate,
 }: {
   page: Page;
-  onNavigate: (page: Page) => void;
+  onNavigate: (
+    page: Page
+  ) => void;
 }) {
   return (
     <nav className="bottom-nav">
@@ -2215,7 +2552,8 @@ function BottomNav({
 
       <button
         className={
-          page === "transactions"
+          page ===
+          "transactions"
             ? "active"
             : ""
         }
@@ -2241,7 +2579,9 @@ function BottomNav({
             : ""
         }
         onClick={() =>
-          onNavigate("accounts")
+          onNavigate(
+            "accounts"
+          )
         }
       >
         <span className="nav-icon">
@@ -2260,7 +2600,9 @@ function BottomNav({
             : ""
         }
         onClick={() =>
-          onNavigate("monthly")
+          onNavigate(
+            "monthly"
+          )
         }
       >
         <span className="nav-icon">
@@ -2343,10 +2685,35 @@ function CalendarIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <rect x="3" y="4" width="18" height="17" rx="2" />
-      <line x1="16" y1="2.5" x2="16" y2="6" />
-      <line x1="8" y1="2.5" x2="8" y2="6" />
-      <line x1="3" y1="9" x2="21" y2="9" />
+      <rect
+        x="3"
+        y="4"
+        width="18"
+        height="17"
+        rx="2"
+      />
+
+      <line
+        x1="16"
+        y1="2.5"
+        x2="16"
+        y2="6"
+      />
+
+      <line
+        x1="8"
+        y1="2.5"
+        x2="8"
+        y2="6"
+      />
+
+      <line
+        x1="3"
+        y1="9"
+        x2="21"
+        y2="9"
+      />
+
       <path d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01" />
     </svg>
   );
@@ -2406,21 +2773,39 @@ function getDefaultTransferForm(
 function formatCompactCurrency(
   amount: number
 ) {
-  const absolute = Math.abs(amount);
+  const absolute =
+    Math.abs(amount);
 
-  if (absolute >= 10000000) {
-    return `${(amount / 10000000).toFixed(1)}Cr`;
+  if (
+    absolute >=
+    10000000
+  ) {
+    return `${(
+      amount / 10000000
+    ).toFixed(1)}Cr`;
   }
 
-  if (absolute >= 100000) {
-    return `${(amount / 100000).toFixed(1)}L`;
+  if (
+    absolute >=
+    100000
+  ) {
+    return `${(
+      amount / 100000
+    ).toFixed(1)}L`;
   }
 
-  if (absolute >= 1000) {
-    return `${(amount / 1000).toFixed(1)}K`;
+  if (
+    absolute >=
+    1000
+  ) {
+    return `${(
+      amount / 1000
+    ).toFixed(1)}K`;
   }
 
-  return formatCurrency(amount);
+  return formatCurrency(
+    amount
+  );
 }
 
 function formatCurrency(
@@ -2431,7 +2816,9 @@ function formatCurrency(
     {
       maximumFractionDigits: 0,
     }
-  ).format(Math.round(amount));
+  ).format(
+    Math.round(amount)
+  );
 }
 
 function formatDate(
